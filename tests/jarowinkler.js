@@ -54,10 +54,95 @@ describe('jaro-winkler tests', function () {
 				a: 'JOE',
 				b: 'JOE',
 				exp: 1
+			},
+			{
+				a: [{
+					x: 'D'
+				}, {
+					x: 'I'
+				}, {
+					x: 'X'
+				}, {
+					x: 'O'
+				}, {
+					x: 'N'
+				}],
+				b: [{
+					x: 'D'
+				}, {
+					x: 'I'
+				}, {
+					x: 'C'
+				}, {
+					x: 'K'
+				}, {
+					x: 'S'
+				}, {
+					x: 'O'
+				}, {
+					x: 'N'
+				}, {
+					x: 'X'
+				}],
+				exp: 0.813,
+				eql: function (a, b) {
+					return a.x === b.x;
+				}
+			},
+			{
+				a: [{
+					x: 'M',
+					y: 1
+				}, {
+					x: 'A',
+					y: 2,
+				}, {
+					x: 'R',
+					y: 3,
+				}, {
+					x: 'T',
+					y: 1
+				}, {
+					x: 'H',
+					y: 2
+				}, {
+					x: 'A',
+					y: 2
+				}],
+				b: [{
+					x: 'M',
+					y: 1
+				}, {
+					x: 'A',
+					y: 2
+				}, {
+					x: 'R',
+					y: 3
+				}, {
+					x: 'H',
+					y: 2
+				}, {
+					x: 'T',
+					y: 1
+				}, {
+					x: 'A',
+					y: 2
+				}],
+				exp: 0.961,
+				eql: function (a, b) {
+					return a.x === b.x && a.y === b.y;
+				}
 			}
 		];
 		tests.forEach(function (el) {
-			var actual = Number(wuzzy.jarowinkler(el.a, el.b).toFixed(3));
+			var actual;
+
+			if (el.eql) {
+				actual = Number(wuzzy.jarowinkler(el.a, el.b, null, el.eql).toFixed(3));
+			} else {
+				actual = Number(wuzzy.jarowinkler(el.a, el.b).toFixed(3))
+			}
+
 			expect(actual).to.equal(el.exp);
 		});
 	});

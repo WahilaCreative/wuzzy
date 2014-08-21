@@ -17,6 +17,16 @@ function ensureArr (arr) {
 	}
 }
 
+function ensureEql (eql) {
+	if (_.isFunction(eql)) {
+		return eql;
+	} else {
+		return function (a, b) {
+			return a === b;
+		};
+	}
+}
+
 /**
  * Computes the jaro-winkler distance for two given arrays.
  *
@@ -41,12 +51,15 @@ function ensureArr (arr) {
  * @param  {String/Array} b - the second string/array to compare
  * @param  {Number} t - the threshold for adding
  * the winkler bonus (defaults to 0.7)
+ * @param {Function} eql - (optional) a function to use when comparing elements of the 
+ * string/array for equality. NOTE: this is optional 
  * @return {Number}   returns the jaro-winkler distance for
  * the two provided arrays.
  */
-exports.jarowinkler = function (a, b, t) {
+exports.jarowinkler = function (a, b, t, eql) {
 	a = ensureArr(a);
 	b = ensureArr(b);
+	eql = ensureEql(eql);
 
 	var max, min;
 	if (a.length > b.length) {
@@ -68,7 +81,7 @@ exports.jarowinkler = function (a, b, t) {
 		for (xi = Math.max(mi - range, 0), xn = Math.min(mi + range + 1, max.length);
 			 xi < xn;
 			 xi++) {
-			if (!mFlg[xi] && (c1 === max[xi])) {
+			if (!mFlg[xi] && eql(c1, max[xi])) {
 				mIdx[mi] = xi;
 				mFlg[xi] = true;
 				matches++;
@@ -95,12 +108,12 @@ exports.jarowinkler = function (a, b, t) {
 		}
 	}
 	for (mi = 0; mi < ma.length; mi++) {
-		if (ma[mi] !== mb[mi]) {
+		if (!eql(ma[mi], mb[mi])) {
 			trans++;
 		}
 	}
 	for (mi = 0; mi < min.length; mi++) {
-		if (a[mi] === b[mi]) {
+		if (eql(a[mi], b[mi])) {
 			prefix++;
 		} else {
 			break;
@@ -148,12 +161,15 @@ exports.jarowinkler = function (a, b, t) {
  * definining weights for the deletion (key: d), insertion
  * (key: i), and substitution (key: s). default values are
  * 1 for all operations.
+ * @param {Function} eql - (optional) a function to use when comparing elements of the 
+ * string/array for equality. NOTE: this is optional 
  * @return {Number}   returns the levenshtein distance for
  * the two provided arrays.
  */
-exports.levenshtein = function (a, b, w) {
+exports.levenshtein = function (a, b, w, eql) {
 	a = ensureArr(a);
 	b = ensureArr(b);
+	eql = ensureEql(eql);
 
 	if (a.length === 0) {
 		return b.length;
@@ -182,7 +198,7 @@ exports.levenshtein = function (a, b, w) {
 		v1[0] = i + 1;
 
 		for (j = 0; j < b.length; j++) {
-			cost = (a[i] === b[j]) ? 0 : weights.s;
+			cost = (eql(a[i], b[j])) ? 0 : weights.s;
 			v1[j + 1] = Math.min(
 				v1[j] + weights.d,
 				v0[j + 1] + weights.i,
@@ -225,12 +241,15 @@ exports.levenshtein = function (a, b, w) {
  * @param  {String/Array} a - the first string/array to compare
  * @param  {String/Array} b - the second string/array to compare
  * @param  {Number} ng - (optional) the n-gram size to work with (defaults to 2)
+ * @param {Function} eql - (optional) a function to use when comparing elements of the 
+ * string/array for equality. NOTE: this is optional 
  * @return {Number}   returns the ngram distance for
  * the two provided arrays.
  */
-exports.ngram = function (a, b, ng) {
+exports.ngram = function (a, b, ng, eql) {
 	a = ensureArr(a);
 	b = ensureArr(b);
+	eql = ensureEql(eql);
 
 	var al = a.length;
 	var bl = b.length;
@@ -257,7 +276,7 @@ exports.ngram = function (a, b, ng) {
 	cost = 0;
 	if ((al < n) || (bl < n)) {
 		for (i = 0, ni = Math.min(al, bl); i < ni; i++) {
-			if (a[i] === b[i]) {
+			if (eql(a[i], b[i])) {
 				cost++;
 			}
 		}
@@ -292,7 +311,7 @@ exports.ngram = function (a, b, ng) {
 			cost = 0;
 			tn = n;
 			for (ni = 0; ni < n; ni++) {
-				if (sa[i - 1 + ni] !== t_j[ni]) {
+				if (!eql(sa[i - 1 + ni], t_j[ni])) {
 					cost++;
 				} else if (sa[i - 1 + ni] === 0) {
 					tn--;

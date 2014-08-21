@@ -104,10 +104,95 @@ describe('n-gram tests', function () {
 				a: 'JOE',
 				b: 'JOE',
 				exp: 1
+			},
+			{
+				a: [{
+					x: 'D'
+				}, {
+					x: 'I'
+				}, {
+					x: 'X'
+				}, {
+					x: 'O'
+				}, {
+					x: 'N'
+				}],
+				b: [{
+					x: 'D'
+				}, {
+					x: 'I'
+				}, {
+					x: 'C'
+				}, {
+					x: 'K'
+				}, {
+					x: 'S'
+				}, {
+					x: 'O'
+				}, {
+					x: 'N'
+				}, {
+					x: 'X'
+				}],
+				exp: .5,
+				eql: function (a, b) {
+					return a.x === b.x;
+				}
+			},
+			{
+				a: [{
+					x: 'M',
+					y: 1
+				}, {
+					x: 'A',
+					y: 2,
+				}, {
+					x: 'R',
+					y: 3,
+				}, {
+					x: 'T',
+					y: 1
+				}, {
+					x: 'H',
+					y: 2
+				}, {
+					x: 'A',
+					y: 2
+				}],
+				b: [{
+					x: 'M',
+					y: 1
+				}, {
+					x: 'A',
+					y: 2
+				}, {
+					x: 'R',
+					y: 3
+				}, {
+					x: 'H',
+					y: 2
+				}, {
+					x: 'T',
+					y: 1
+				}, {
+					x: 'A',
+					y: 2
+				}],
+				exp: .667,
+				eql: function (a, b) {
+					return a.x === b.x && a.y === b.y;
+				}
 			}
 		];
 		tests.forEach(function (el) {
-			var actual = Math.round(wuzzy.ngram(el.a, el.b) * 1000) / 1000;
+			var actual;
+
+			if (el.eql) {
+				actual = Math.round(wuzzy.ngram(el.a, el.b, null, el.eql) * 1000) / 1000;
+			} else {
+				actual = Math.round(wuzzy.ngram(el.a, el.b) * 1000) / 1000;
+			}
+
 			expect(actual).to.equal(el.exp);
 		});
 	});
